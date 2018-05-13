@@ -41,3 +41,17 @@ Flags:
 
 Use "png [command] --help" for more information about a command.
 ```
+
+## Authentication
+
+| Type | Support | Description |
+|:---:|:---:|:---:|
+|certificates| no | not implemented |
+| user creds | partial | only when supplied in the URI (eg: nats://user:pass@server:port)|
+| plain (no auth) | yes | - |
+
+## TODO
+
+* [ ] Support user sefined NATS subject
+* [ ] Support authentication methods (current implementation support only plain connections)
+* [ ] Add a /metrics endpoint for telemetry
