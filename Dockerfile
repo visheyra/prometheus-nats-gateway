@@ -6,4 +6,9 @@ COPY . /go/src/github.com/visheyra/prometheus-nats-gateway
 
 RUN make -C /go/src/github.com/visheyra/prometheus-nats-gateway
 
-ENTRYPOINT ["/go/bin/png"]
+FROM gcr.io/distroless/base
+
+COPY --from=build /go/bin/png /bin/png
+
+ENTRYPOINT ["/bin/png"]
+
