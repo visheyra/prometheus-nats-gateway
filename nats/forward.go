@@ -2,15 +2,16 @@ package nats
 
 import (
 	"encoding/json"
+	"strconv"
+	"time"
+
 	"github.com/nats-io/go-nats"
 	"github.com/prometheus/prometheus/prompb"
 	"go.uber.org/zap"
-	"strconv"
-	"time"
 )
 
 //ForwardTimeSerie ...
-func ForwardTimeSerie(t prompb.TimeSeries, forwardAddr string) {
+func ForwardTimeSerie(t prompb.TimeSeries, forwardAddr, user, pass, topic string) {
 
 	l, err := zap.NewProduction()
 	if err != nil {
@@ -20,19 +21,9 @@ func ForwardTimeSerie(t prompb.TimeSeries, forwardAddr string) {
 	logger := l.Sugar()
 
 	//
-	// Format labels as map[string]string
-	//
-
-	lbs := make(map[string]string)
-	for _, l := range t.GetLabels() {
-		lbs[l.GetName()] = l.GetValue()
-	}
-
-	//
 	// Connect to nats server
 	//
-
-	cnx, err := nats.Connect(forwardAddr)
+	cnx, err := nats.Connect(forwardAddr, nats.UserInfo(user, pass))
 	if err != nil {
 		logger.Errorw("Can't establish connection to nats endpoint",
 			"endpoint", forwardAddr,
@@ -41,6 +32,15 @@ func ForwardTimeSerie(t prompb.TimeSeries, forwardAddr string) {
 		return
 	}
 	defer cnx.Close()
+
+	//
+	// Format labels as map[string]string
+	//
+
+	lbs := make(map[string]string)
+	for _, l := range t.GetLabels() {
+		lbs[l.GetName()] = l.GetValue()
+	}
 
 	logger.Debugw("Sending time serie",
 		"length", len(t.GetSamples()),
@@ -73,11 +73,16 @@ func ForwardTimeSerie(t prompb.TimeSeries, forwardAddr string) {
 		// Publish point to nats
 		//
 
-		if cnx.Publish("prometheus", b) != nil {
+		if cnx.Publish(topic, b) != nil {
 			logger.Errorw("Can't send Json to endpoint",
 				"endpoint", forwardAddr,
-				"topic", "prometheus",
+				"topic", topic,
 				"data", string(b))
+		} else {
+			logger.Debugw("Successfully sent metric",
+				"endpoint", forwardAddr,
+				"topic", topic,
+				"size", len(b))
 		}
 	}
 }

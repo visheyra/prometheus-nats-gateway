@@ -16,6 +16,9 @@ import (
 
 type handler struct {
 	forwardEndpoint string
+	user            string
+	pass            string
+	topic           string
 }
 
 func (h handler) writeHandler(w http.ResponseWriter, r *http.Request) {
@@ -39,14 +42,14 @@ func (h handler) writeHandler(w http.ResponseWriter, r *http.Request) {
 
 	ts := req.GetTimeseries()
 	for _, s := range ts {
-		go nats.ForwardTimeSerie(*s, h.forwardEndpoint)
+		nats.ForwardTimeSerie(*s, h.forwardEndpoint, h.user, h.pass, h.topic)
 	}
 
 	w.WriteHeader(http.StatusAccepted)
 }
 
 //StartServer ...
-func StartServer(listenEndpoint, forwardEndpoint string) error {
+func StartServer(listenEndpoint, forwardEndpoint, user, pass, topic string) error {
 
 	l, err := zap.NewProduction()
 	if err != nil {
@@ -57,6 +60,9 @@ func StartServer(listenEndpoint, forwardEndpoint string) error {
 
 	h := handler{
 		forwardEndpoint: forwardEndpoint,
+		user:            user,
+		pass:            pass,
+		topic:           topic,
 	}
 	http.HandleFunc("/prom", h.writeHandler)
 	if err := http.ListenAndServe(listenEndpoint, nil); err != nil {

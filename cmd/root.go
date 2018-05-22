@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var cfgFile = ""
@@ -16,7 +17,14 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	//Empty for the moment
+	cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "c", "config file, there is no default")
+}
+
+func initConfig() {
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+	}
 }
 
 //Execute the rootCmd to forward args
