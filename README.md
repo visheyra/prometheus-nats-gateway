@@ -2,6 +2,8 @@
 
 Publish prometheus metrics into NATS
 
+[![Build Status](https://travis-ci.org/visheyra/prometheus-nats-gateway.svg?branch=master)](https://travis-ci.org/visheyra/prometheus-nats-gateway)
+
 ## Description
 
 This tool is only compliant with prometheus 2.0 instances as it uses [remote write](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#%3Cremote_write%3E) feature to collect timeseries from prometheus.
